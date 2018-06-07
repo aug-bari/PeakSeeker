@@ -9,8 +9,8 @@ buildscript {
     }
 }
 
-group 'org.augbari'
-version '1.0'
+group = 'org.augbari'
+version = '1.0'
 
 apply plugin: 'kotlin'
 
@@ -23,7 +23,7 @@ kotlin {
 repositories {
     mavenCentral()
     jcenter()
-    maven { url 'https://jitpack.io' }
+    maven { url = 'https://jitpack.io' }
 }
 
 dependencies {
