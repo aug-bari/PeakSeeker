@@ -159,7 +159,7 @@ class PeakSeeker(broker: String, clientName: String): MqttCallback {
             // Call status changed callback
             onStatusChangedCallback()
 
-            // Reset system after 1 second
+            // Reset system after 300 milliseconds
             async {
                 Thread.sleep(300)
                 accelerometer.clearSeries()
