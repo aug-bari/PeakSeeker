@@ -5,24 +5,25 @@ package org.augbari.peakSeeker
  * */
 class Example {
 
-    companion object {
+    companion object : OnPeakListener {
+
         @JvmStatic
         fun main(args: Array<String>) {
 
             // Create PeakSeeker object
-            val peakSeeker = PeakSeeker("tcp://broker.shiftr.io", "PeakSeeker")
+            val peakSeeker = PeakSeeker("tcp://broker.shiftr.io", "PeakSeeker", this)
 
             // Perform connection
-            peakSeeker.connect("pippobaudo", "666tommaso")
+            peakSeeker.connect("aug-bari", ";)")
 
             // Subscribe to topic
             peakSeeker.subscribe("mpu6050")
 
-            // Set custom callback to see status change
-            peakSeeker.onStatusChangedCallback = {
-                println(peakSeeker.peak.toString())
-            }
+        }
 
+        //
+        override fun onPeak(peak: Peak) {
+            println("Detected ${peak.type} peak on ${peak.axis} axis with value: ${peak.value}")
         }
     }
 

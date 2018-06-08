@@ -12,7 +12,7 @@ import kotlin.math.abs
  * Peak Seeker is a library used to check if a peak is reached by an accelerometer communication via mqtt broker
  *
  * */
-class PeakSeeker(broker: String, clientName: String): MqttCallback {
+class PeakSeeker(broker: String, clientName: String, var listener: OnPeakListener): MqttCallback {
 
     // MQTT
     private val mqttClient = Mqtt(broker, clientName)
@@ -21,11 +21,8 @@ class PeakSeeker(broker: String, clientName: String): MqttCallback {
     private val accelerometer = Accelerometer()
 
     // Peak
-    var peak = PeakType.NONE
-    private val peakThreshold = 10.0
-
-    // Custom callback on accelerometer status changed
-    var onStatusChangedCallback: () -> Unit = {}
+    var peak = Peak()
+    private val peakThreshold: Double = 10.0
 
     /**
      * Connect to mqtt server providing username and password.
@@ -62,7 +59,7 @@ class PeakSeeker(broker: String, clientName: String): MqttCallback {
      * @param data String data to send to topic.
      * */
     fun sendMessage(topic: String, data: String) {
-        mqttClient.publish(topic, MqttMessage(data.toByteArray()))
+        mqttClient.send(data, topic)
     }
 
     /**
@@ -90,7 +87,7 @@ class PeakSeeker(broker: String, clientName: String): MqttCallback {
         }
 
         // Check peak if is none
-        if(peak == PeakType.NONE) {
+        if(peak.type == Peak.PeakType.NONE) {
             checkPeak()
         }
 
@@ -107,54 +104,14 @@ class PeakSeeker(broker: String, clientName: String): MqttCallback {
         val xSeries = accelerometer.series.map { it[0] }
         val ySeries = accelerometer.series.map { it[1] }
         val zSeries = accelerometer.series.map { it[2] }
+        
+        xSeries.detectPeak(Peak.PeakAxis.X, peakThreshold)
+        ySeries.detectPeak(Peak.PeakAxis.Y, peakThreshold)
+        zSeries.detectPeak(Peak.PeakAxis.Z, peakThreshold)
 
-        // Search peak in x
-        xSeries.forEachIndexed { index, value->
-            if(index > 0) {
-
-                // x peak is found
-                if(abs(value - xSeries[index - 1]) > peakThreshold) {
-
-                    // Update status
-                    peak = if(value > 0) PeakType.RIGHT else PeakType.LEFT
-
-                }
-
-            }
-        }
-
-        // Search peak in y
-        ySeries.forEachIndexed { index, value->
-            if(index > 0) {
-
-                // x peak is found
-                if(abs(value - ySeries[index - 1]) > peakThreshold) {
-
-                    // Update status
-                    peak = if(value > 0) PeakType.FORWARD else PeakType.BACKWARD
-
-                }
-
-            }
-        }
-
-        // Search peak in z
-        zSeries.forEachIndexed { index, value->
-            if(index > 0) {
-
-                // x peak is found
-                if(abs(value - zSeries[index - 1]) > peakThreshold) {
-
-                    // Update status
-                    peak = if(value > 0) PeakType.UP else PeakType.DOWN
-
-                }
-
-            }
-        }
 
         // If peak is found
-        if(peak != PeakType.NONE) {
+        if(peak.type != Peak.PeakType.NONE) {
 
             // Call status changed callback
             onStatusChangedCallback()
@@ -163,11 +120,36 @@ class PeakSeeker(broker: String, clientName: String): MqttCallback {
             async {
                 Thread.sleep(300)
                 accelerometer.clearSeries()
-                peak = PeakType.NONE
+                peak = Peak()
             }
 
         }
+    }
 
+    private fun List<Double>.detectPeak(axis: Peak.PeakAxis, peakThreshold: Double) {
+        this.forEachIndexed { index, value->
+            if(index > 0) {
+                // peak is found
+                val peakValue = abs(value - this[index - 1])
+
+                if(peakValue > peakThreshold) {
+
+                    // Update status
+                    when (axis) {
+                        Peak.PeakAxis.X -> peak.type = if (value > 0) Peak.PeakType.RIGHT else Peak.PeakType.LEFT
+                        Peak.PeakAxis.Y -> peak.type = if (value > 0) Peak.PeakType.FORWARD else Peak.PeakType.BACKWARD
+                        Peak.PeakAxis.Z -> peak.type = if (value > 0) Peak.PeakType.UP else Peak.PeakType.DOWN
+                    }
+
+                    peak.value = peakValue
+                    peak.axis = axis
+                }
+            }
+        }
+    }
+
+    private fun onStatusChangedCallback() {
+        listener.onPeak(peak)
     }
 
     /**
