@@ -27,11 +27,11 @@ repositories {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'com.github.aug-bari:MqttKotlinAPI:b9786c8ce0'
-    compile "org.json:json:20140107"
-    compile "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.21"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'com.github.aug-bari:MqttKotlinAPI:f21b9af347'
+    implementation "org.json:json:20140107"
+    implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.21"
 }
 
 compileKotlin {

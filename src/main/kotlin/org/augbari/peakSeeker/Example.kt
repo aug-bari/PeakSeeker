@@ -13,7 +13,7 @@ class Example {
             val peakSeeker = PeakSeeker("tcp://broker.shiftr.io", "PeakSeeker")
 
             // Perform connection
-            peakSeeker.connect("pippobaudo", "666tommaso")
+            peakSeeker.connect("aug-bari", ";)")
 
             // Subscribe to topic
             peakSeeker.subscribe("mpu6050")

@@ -62,7 +62,7 @@ class PeakSeeker(broker: String, clientName: String): MqttCallback {
      * @param data String data to send to topic.
      * */
     fun sendMessage(topic: String, data: String) {
-        mqttClient.publish(topic, MqttMessage(data.toByteArray()))
+        mqttClient.send(data, topic)
     }
 
     /**
