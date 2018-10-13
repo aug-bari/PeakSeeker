@@ -19,10 +19,11 @@ class PeakSeeker(broker: String, clientName: String, var listener: OnPeakListene
 
     // Objects
     private val accelerometer = Accelerometer()
+    private var accelerometerTopic = ""
 
     // Peak
     var peak = Peak()
-    private val peakThreshold: Double = 10.0
+    private val peakThreshold: Double = 4.0
 
     /**
      * Connect to mqtt server providing username and password.
@@ -49,6 +50,7 @@ class PeakSeeker(broker: String, clientName: String, var listener: OnPeakListene
      * @param topic Topic to register to.
      * */
     fun subscribe(topic: String) {
+        accelerometerTopic = topic
         mqttClient.subscribe(topic)
     }
 
@@ -78,7 +80,7 @@ class PeakSeeker(broker: String, clientName: String, var listener: OnPeakListene
 
         // Check topic
         when(topic) {
-            "mpu6050" -> {
+            accelerometerTopic -> {
                 accelerometer.setValues(doubleArrayOf(accel.getDouble("x"), accel.getDouble("y"), accel.getDouble("z")))
             }
             "disconnect" -> {
@@ -118,7 +120,7 @@ class PeakSeeker(broker: String, clientName: String, var listener: OnPeakListene
 
             // Reset system after 300 milliseconds
             async {
-                Thread.sleep(300)
+                Thread.sleep(1000)
                 accelerometer.clearSeries()
                 peak = Peak()
             }

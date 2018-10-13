@@ -3,17 +3,29 @@ A library used to check peak of a signal by a callback. Signal datas are coming 
 
 ### Implementation
 ```sh
-// Create PeakSeeker object
-val peakSeeker = PeakSeeker("tcp://mybroker.com", "PeakSeekerClientName")
+class Example {
 
-// Perform connection
-peakSeeker.connect("username", "password")
+    companion object : OnPeakListener {
 
-// Subscribe to topic
-peakSeeker.subscribe("topicName")
+        @JvmStatic
+        fun main(args: Array<String>) {
 
-// Set custom callback to see status change
-peakSeeker.onStatusChangedCallback = {
-    println(peakSeeker.peak.toString())
+            // Create PeakSeeker object
+            val peakSeeker = PeakSeeker("tcp://mybroker.com", "PeakSeekerClientName")
+            
+            // Perform connection
+            peakSeeker.connect("username", "password")
+            
+            // Subscribe to topic
+            peakSeeker.subscribe("topicName")
+
+        }
+
+        //Set custom callback to see status change
+        override fun onPeak(peak: Peak) {
+            println("Detected ${peak.type} peak on ${peak.axis} axis with value: ${peak.value}")
+        }
+    }
+
 }
 ```
